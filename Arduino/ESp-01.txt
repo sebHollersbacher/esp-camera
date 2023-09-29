@@ -1,0 +1,10 @@
+ESP		Arduino
+--------------------
+GND		GND
+TX		TX
+RX		RX
+VSS		VSS
+GPIO0		GND
+RST		GND	-> remove
+EN		VSS
+GPIO2		remove
