@@ -1,5 +1,3 @@
-#include <Arduino_OV767X.h>
-
 //
 // Source code for application to transmit image from ov7670 to PC via USB
 // By Siarhei Charkes in 2015
@@ -326,6 +324,22 @@ const struct regval_list yuv422_ov7670[] PROGMEM = {
   { REG_COM13, COM13_UVSAT },
   { 0xff, 0xff }, /* END MARKER */
 };
+/*
+const struct regval_list yuv422_ov7670[] PROGMEM = {
+  { REG_COM7, 0x0 },
+  { REG_RGB444, 0 },
+  { REG_COM1, 0 },
+  { REG_COM15, COM15_R00FF },
+  { REG_COM9, 0x6A },
+  { 0x4f, 0x80 },
+  { 0x50, 0x80 },
+  { 0x51, 0 },
+  { 0x52, 0x22 },
+  { 0x53, 0x5e },
+  { 0x54, 0x80 },
+  { REG_COM13, COM13_UVSAT },
+  { 0xff, 0xff },
+};*/
 
 const struct regval_list ov7670_default_regs[] PROGMEM = {
   //from the linux driver
@@ -679,15 +693,39 @@ static void captureImg(uint16_t wg, uint16_t hg) {
   _delay_ms(100);
 }
 
+#define trigPin 13
+#define echoPin 12
+#define startLED 10
+
 void setup() {
   arduinoUnoInut();
   camInit();
   setRes();
   setColor();
   wrReg(0x11, 11);  //Earlier it had the value: wrReg(0x11, 12); New version works better for me :) !!!!
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(startLED, OUTPUT);
 }
 
 
 void loop() {
-  captureImg(320, 240);
+  long duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration/58;
+
+  if(distance < 50) {
+    digitalWrite(startLED, HIGH);
+    captureImg(320, 240);
+    digitalWrite(startLED, LOW);
+  } else {
+    delay(1000);
+  }
+  delay(5000);
 }
