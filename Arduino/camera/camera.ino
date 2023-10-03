@@ -665,11 +665,13 @@ static void captureImg(uint16_t wg, uint16_t hg) {
   uint16_t y, x;
 
   StringPgm(PSTR("*RDY*"));
+  Serial.print("*RDY*");
 
   while (!(PIND & 8))
     ;  //wait for high
   while ((PIND & 8))
     ;  //wait for low
+
 
   y = hg;
   while (y--) {
@@ -698,6 +700,7 @@ static void captureImg(uint16_t wg, uint16_t hg) {
 #define startLED 10
 
 void setup() {
+  Serial.begin(1000000);
   arduinoUnoInut();
   camInit();
   setRes();
