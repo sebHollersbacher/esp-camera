@@ -33,7 +33,7 @@ void setup() {
   Serial.begin(74880);
   Serial.println("Readings will apear here.");
 
-  WiFi.begin("WGD43","Dametzstrasse_43"); // Add your Wi-Fi name and password here
+  WiFi.begin("SSID","password"); // Add your Wi-Fi name and password here
   Serial.print("Connecting");
   while(WiFi.status() != WL_CONNECTED){
     delay(1000);

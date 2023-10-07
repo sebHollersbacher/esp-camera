@@ -33,7 +33,7 @@ void setup() {
   Serial.begin(74880);
   Serial.println("Readings will apear here.");
 
-  WiFi.begin("Liwest6142","F6C82E01693F43A1"); // Add your Wi-Fi name and password here
+  WiFi.begin("SSID","password"); // Add your Wi-Fi name and password here
   Serial.print("Connecting");
   while(WiFi.status() != WL_CONNECTED){
     delay(1000);

@@ -15,8 +15,8 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 
-const char* ssid = "Leithen6";
-const char* password = "17137838011169307511";
+const char* ssid = "SSID";
+const char* password = "password";
 
 String serverName = "192.168.178.48";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
 //String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
