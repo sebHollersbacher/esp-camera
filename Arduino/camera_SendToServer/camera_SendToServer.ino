@@ -14,16 +14,18 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
+#include <HTTPClient.h>
 
 const char* ssid = "SSID";
 const char* password = "password";
 
-String serverName = "192.168.178.48";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
+String serverName = "192.168.1.138";   // REPLACE WITH YOUR Raspberry Pi IP ADDRESS
 //String serverName = "example.com";   // OR REPLACE WITH YOUR DOMAIN NAME
+const char *post_url = "http://192.168.1.138:8000/upload-image";
 
 String serverPath = "/";     // The default serverPath should be upload.php
 
-const int serverPort = 5000;
+const int serverPort = 8000;
 
 WiFiClient client;
 
@@ -86,21 +88,22 @@ void setup() {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
+
+  config.pixel_format = PIXFORMAT_JPEG; // for streaming
+  config.frame_size = FRAMESIZE_VGA;
+  config.jpeg_quality = 4;  //0-63 lower number means higher quality
+  config.fb_count = 2;
 
   // init with high specs to pre-allocate larger buffers
-  if(psramFound()){
-    config.frame_size = FRAMESIZE_SVGA;
+  /*if(psramFound()){
+    config.frame_size = FRAMESIZE_CIF;
     config.jpeg_quality = 10;  //0-63 lower number means higher quality
     config.fb_count = 2;
-    /*config.frame_size = FRAMESIZE_CIF;
-    config.jpeg_quality = 12;  //0-63 lower number means higher quality
-    config.fb_count = 1;*/
   } else {
     config.frame_size = FRAMESIZE_CIF;
     config.jpeg_quality = 12;  //0-63 lower number means higher quality
     config.fb_count = 1;
-  }
+  }*/
   
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -111,15 +114,61 @@ void setup() {
   }
 
   sendPhoto(); 
+  sFoto();
 }
 
 void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= timerInterval) {
-    sendPhoto();
-    sendPhoto();
+    sFoto();
     previousMillis = currentMillis;
   }
+}
+
+void sFoto() {
+  camera_fb_t *fb = NULL;
+
+  // Take Picture with Camera
+  fb = esp_camera_fb_get();
+  delay(5000);
+  if (!fb)
+  {
+    Serial.println("Camera capture failed");
+    return;
+  }
+
+  HTTPClient http;
+
+  Serial.print("[HTTP] begin...\n");
+  // configure traged server and url
+
+  http.begin(post_url); //HTTP
+
+  Serial.print("[HTTP] POST...\n");
+  // start connection and send HTTP header
+  int httpCode = http.sendRequest("POST", fb->buf, fb->len); // we simply put the whole image in the post body.
+
+  // httpCode will be negative on error
+  if (httpCode > 0)
+  {
+    // HTTP header has been send and Server response header has been handled
+    Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+
+    // file found at server
+    if (httpCode == HTTP_CODE_OK)
+    {
+      String payload = http.getString();
+      Serial.println(payload);
+    }
+  }
+  else
+  {
+    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+  }
+
+  http.end();
+
+  esp_camera_fb_return(fb);
 }
 
 String sendPhoto() {
@@ -133,6 +182,8 @@ String sendPhoto() {
     delay(1000);
     ESP.restart();
   }
+
+  delay(5000);
   
   Serial.println("Connecting to server: " + serverName);
 
