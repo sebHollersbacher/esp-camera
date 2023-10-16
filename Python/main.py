@@ -16,7 +16,8 @@ def subscribe():
     client.on_message = on_message
     client.on_publish = on_publish
     client.connect("192.168.0.27", 1883, 60)
-    client.subscribe("testTopic")
+    client.subscribe("esp_cam_0")
+    client.subscribe("esp_cam_1")
 
     while client.loop() == 0:
         pass
@@ -25,9 +26,10 @@ def pub():
     host = "192.168.0.27"
     while True:
         input1 = input()
-        publish.single(topic="testTopic", payload=input1, hostname=host)
+        print(input1)
+        publish.single(topic="esp_cam_0", payload=input1, hostname=host)
         time.sleep(1)
 
 
 if __name__ == '__main__':
-    pub()
+    subscribe()

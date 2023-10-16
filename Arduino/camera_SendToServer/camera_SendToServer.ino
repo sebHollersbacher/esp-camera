@@ -9,6 +9,7 @@ const char* ssid = "SSID";
 const char* password = "password";
 const char *post_url = "http://192.168.0.27:8000/upload-image";
 
+void callback(char* topic, byte* payload, unsigned int length);
 const char* mqtt_server = "192.168.0.27";
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -52,15 +53,6 @@ void setup() {
   Serial.println();
   Serial.print("ESP32-CAM IP Address: ");
   Serial.println(WiFi.localIP());
-  
-  client.setServer(mqtt_server,1883);
-  client.setCallback(callback);
-  if(client.connect("CAM")){
-    Serial.println("CAM - MQTT - OK");
-    client.subscribe("testTopic");
-  }else{
-    Serial.println("CAM - MQTT - ERROR");
-  }
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -95,6 +87,19 @@ void setup() {
     delay(1000);
     ESP.restart();
   }
+  
+  client.setServer(mqtt_server,1883);
+  client.setCallback(callback);
+  if(client.connect("CAM")){
+    Serial.println("CAM - MQTT - OK");
+    client.publish("esp_cam_0", "1");
+    client.subscribe("esp_cam_0");
+  }else{
+    Serial.println("CAM - MQTT - ERROR");
+    delay(1000);
+    ESP.restart();
+  }
+  Serial.println("Setup finished");
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -127,10 +132,10 @@ void loop() {
 void sendPhoto() {
   camera_fb_t *fb = NULL;
 
-  //digitalWrite(4, HIGH);
+  digitalWrite(4, HIGH);
   // Take Picture with Camera
   fb = esp_camera_fb_get();
-  //digitalWrite(4, LOW);
+  digitalWrite(4, LOW);
   delay(5000);
   if (!fb)
   {
@@ -169,7 +174,7 @@ void sendPhoto() {
   http.end();
   if(client.connect("CAM")){
     Serial.println("CAM - MQTT - OK");
-    client.subscribe("testTopic");
+    client.subscribe("esp_cam_0");
   }else{
     Serial.println("CAM - MQTT - ERROR");
     ESP.restart();
