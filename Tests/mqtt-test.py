@@ -32,4 +32,7 @@ def pub():
 
 
 if __name__ == '__main__':
-    subscribe()
+    if(input() == "1"):
+        subscribe()
+    else:
+        pub()
