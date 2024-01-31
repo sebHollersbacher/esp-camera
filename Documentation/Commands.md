@@ -1,5 +1,18 @@
 # Commands
 
+List of commands used
+
+## Often used
+
+```
+docker ps -a								list all containers
+docker start (container)					start container
+docker stop (container)						stop container
+docker rm (container)						remove container
+docker images								show all images
+docker rmi (image)							remove image
+```
+
 
 
 ## Installing MQTT server using Docker
@@ -34,5 +47,27 @@ Options:
 update					update the container configuration
 --restart=always		if the container exits for any reason, it gets restarted
 mosquitto				the container name
+```
+
+
+
+
+
+## Backend
+
+```
+pip install pipreqs							used to create requirements.txt for only project	(updated verison manually)
+docker build -t backend .					create image for backend
+	-t backend								give name to image
+```
+
+Create container from image:
+
+```
+docker run --name backend -p 8000:8000 -v /home/pi/esp-camera/Server/uploads:/app/uploads backend
+	--name backend					give name to container
+	-p 8000:8000					map port
+	-v								map host-directory to container-directory
+	backend							image-name
 ```
 
