@@ -6,7 +6,7 @@ export default function App() {
   const [image, setImage] = useState('');
 
   const getImageList = () => {
-    fetch('http://192.168.0.27:8000/files')
+    fetch('/files')
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -18,7 +18,7 @@ export default function App() {
   };
 
   const fetchImage = () => {
-    fetch('http://192.168.0.27:8000/uploads/img_1.jpg')
+    fetch('/uploads/frog.jpg')
       .then((response) => {
         if (!response.ok) {
           throw new Error('Could not get image');

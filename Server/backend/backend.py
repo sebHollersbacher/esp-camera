@@ -1,5 +1,6 @@
 import os
 import glob
+import datetime
 from flask import Flask, flash, request, redirect, url_for, send_from_directory, jsonify
 from flask_cors import CORS, cross_origin
 from werkzeug.utils import secure_filename
@@ -9,15 +10,6 @@ from multiprocessing import Value
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
-
-# declare counter variable
-counter = Value('i', 0)
-
-def save_img():
-	with counter.get_lock():
-		counter.value += 1
-		return counter.value
-	# print("Image Saved", end="\n") # debug
 
     
 @app.route('/files', methods=["GET"])
@@ -31,19 +23,19 @@ def send_files():
 @app.route("/upload-image", methods=["POST"])
 def upload_image():
     if request.method == "POST":
-        print("new Request")
+        print("Received image")
         image_raw_bytes = request.get_data()
         
-        number = save_img()
-        print("new Image " + str(number))
-        save_location = (os.path.join(app.root_path, "uploads/image_"+str(number)+".jpg")) #save to the same folder as the flask app live in 
+        now = datetime.datetime.now()
+        #save to the same folder as the flask app live in 
+        save_location = (os.path.join(app.root_path, f"uploads/image_{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}.jpg")) 
 
         f = open(save_location, 'wb')
         f.write(image_raw_bytes)   # write the bytes from the request body to the file
         f.close()
         return "image saved"
 
-    
+      
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(os.path.join(app.root_path, "uploads/"),
