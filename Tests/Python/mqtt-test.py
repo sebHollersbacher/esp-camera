@@ -1,3 +1,5 @@
+import datetime
+
 import paho.mqtt.client as paho
 import time
 import paho.mqtt.publish as publish
@@ -15,7 +17,7 @@ def subscribe():
     client = paho.Client()
     client.on_message = on_message
     client.on_publish = on_publish
-    client.connect("192.168.0.27", 1883, 60)
+    client.connect("192.168.178.48", 1883, 60)
     client.subscribe("esp_cam_0")
     client.subscribe("esp_cam_1")
 
@@ -23,7 +25,7 @@ def subscribe():
         pass
 
 def pub():
-    host = "192.168.0.27"
+    host = "192.168.178.48"
     while True:
         input1 = input()
         print(input1)
@@ -32,7 +34,4 @@ def pub():
 
 
 if __name__ == '__main__':
-    if(input() == "1"):
-        subscribe()
-    else:
-        pub()
+    pub()

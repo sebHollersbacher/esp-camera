@@ -1,16 +1,16 @@
-#include "WiFi.h"
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 #include "HTTPClient.h"
 #include <PubSubClient.h>
+#include <WiFiManager.h>  
 
-const char* ssid = "SSID";
-const char* password = "password";
-const char *post_url = "http://192.168.0.27:8000/upload-image";
+#define SERVER_IP "192.168.178.48"
+
+const char* mqtt_server = SERVER_IP;
+const char *post_url = "http://" SERVER_IP ":8000/upload-image";
 
 void callback(char* topic, byte* payload, unsigned int length);
-const char* mqtt_server = "192.168.0.27";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -41,18 +41,9 @@ void setup() {
   pinMode(4, OUTPUT);
   Serial.begin(115200);
 
-  WiFi.mode(WIFI_STA);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);  
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println();
-  Serial.print("ESP32-CAM IP Address: ");
-  Serial.println(WiFi.localIP());
+  // Setup WiFi
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("ESP32");
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -76,7 +67,7 @@ void setup() {
   config.xclk_freq_hz = 20000000;
 
   config.pixel_format = PIXFORMAT_JPEG;
-  config.frame_size = FRAMESIZE_UXGA;   // resolution
+  config.frame_size = FRAMESIZE_VGA;   // resolution UXGA
   config.jpeg_quality = 10;  //0-63 lower number means higher quality
   config.fb_count = 1;  // use 1 framebuffer as we are sending 1 image
   
@@ -88,97 +79,80 @@ void setup() {
     ESP.restart();
   }
   
-  client.setServer(mqtt_server,1883);
+  // MQTT
+  client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  if(client.connect("CAM")){
-    Serial.println("CAM - MQTT - OK");
-    client.publish("esp_cam_0", "1");
-    client.subscribe("esp_cam_0");
-  }else{
-    Serial.println("CAM - MQTT - ERROR");
-    delay(1000);
-    ESP.restart();
-  }
+  startMQTT();
+
   Serial.println("Setup finished");
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived in topic: ");
+  Serial.print("Message in topic: ");
   Serial.println(topic);
-
-  Serial.print("Message: ");
-
-  String message;
   for (int i = 0; i < length; i++) {
-    message = message + (char)payload[i];
+    Serial.print(payload[i]);
   }
-  Serial.print(message);
   Serial.println();
-  if(message == "1") {
-    for(int i = 0; i < 5; i++) {  // we first take 5 pictures, as the quality improves
-      camera_fb_t *fb = esp_camera_fb_get();
-      delay(100);
-      esp_camera_fb_return(fb);
-    }
-    Serial.println("photo");
-    sendPhoto(); 
+
+  for(int i = 0; i < 5; i++) {  // we first take 5 pictures, as the quality improves with more pictures
+    camera_fb_t *fb = esp_camera_fb_get();
+    delay(100);
+    esp_camera_fb_return(fb);
   }
+  
+  // Take final photo and send it
+  sendPhoto(); 
 }
 
 void loop() {
   client.loop();
 }
 
-void sendPhoto() {
-  camera_fb_t *fb = NULL;
 
-  digitalWrite(4, HIGH);
+void sendPhoto() {
+  digitalWrite(4, HIGH);    // light
+
   // Take Picture with Camera
+  camera_fb_t *fb = NULL;
   fb = esp_camera_fb_get();
-  digitalWrite(4, LOW);
+
+  digitalWrite(4, LOW);   // light
   delay(5000);
-  if (!fb)
-  {
+  if (!fb){
     Serial.println("Camera capture failed");
     return;
   }
 
   HTTPClient http;
-
-  Serial.print("[HTTP] begin...\n");
-  // configure traged server and url
-
-  http.begin(post_url); //HTTP
-
-  Serial.print("[HTTP] POST...\n");
-  // start connection and send HTTP header
+  Serial.print("[HTTP] Begin POST \n");
+  http.begin(post_url);
   int httpCode = http.sendRequest("POST", fb->buf, fb->len); // we simply put the whole image in the post body.
 
-  // httpCode will be negative on error
-  if (httpCode > 0)
-  {
-    // HTTP header has been send and Server response header has been handled
-    Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+  if (httpCode > 0){
+    Serial.printf("[HTTP] POST code: %d\n", httpCode);
 
-    // file found at server
-    if (httpCode == HTTP_CODE_OK)
-    {
+    if (httpCode == HTTP_CODE_OK){
       String payload = http.getString();
       Serial.println(payload);
     }
+  }else{
+    Serial.printf("[HTTP] POST failed, error: %s\n", http.errorToString(httpCode).c_str());
+    ESP.restart();
   }
-  else
-  {
-    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
-  }
+
   http.end();
+  esp_camera_fb_return(fb);
+  startMQTT();  // restart MQTT after sending Image
+}
+
+void startMQTT(){
   if(client.connect("CAM")){
     Serial.println("CAM - MQTT - OK");
     client.subscribe("esp_cam_0");
   }else{
     Serial.println("CAM - MQTT - ERROR");
+    delay(1000);
     ESP.restart();
   }
-
-  esp_camera_fb_return(fb);
 }
