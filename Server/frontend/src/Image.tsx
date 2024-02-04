@@ -12,7 +12,7 @@ export default function Image() {
   }, []);
 
   const handlePublish = () => {
-    const client = mqtt.connect("ws://192.168.178.48:9001")
+    const client = mqtt.connect("ws://192.168.0.23:9001")
     client.on('connect', () => {
       console.log("connected")
       client.publish("esp_cam_0", "esp_cam_0");
@@ -21,7 +21,7 @@ export default function Image() {
   };
 
   const fetchImage = () => {
-    fetch('/uploads/' + image)
+    fetch('http://192.168.0.23:8000/uploads/' + image)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Could not get image');

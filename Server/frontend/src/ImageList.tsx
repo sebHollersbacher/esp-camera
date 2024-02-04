@@ -9,7 +9,7 @@ export default function ImageList() {
   }, []);
 
   const getImageList = () => {
-    fetch('/files')
+    fetch('http://192.168.0.23:8000/files')
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -21,7 +21,7 @@ export default function ImageList() {
   };
 
   const handlePublish = () => {
-    const client = mqtt.connect("ws://192.168.178.48:9001")
+    const client = mqtt.connect("ws://192.168.0.23:9001")
     client.on('connect', () => {
       console.log("connected")
       client.publish("esp_cam_0", "esp_cam_0");
