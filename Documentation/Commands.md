@@ -53,7 +53,7 @@ mosquitto				the container name
 
 
 
-## Backend
+## Backend 
 
 ```
 pip install pipreqs							used to create requirements.txt for only project	(updated verison manually)
@@ -70,4 +70,27 @@ docker run --name backend -p 8000:8000 -v /home/pi/esp-camera/Server/uploads:/ap
 	-v								map host-directory to container-directory
 	backend							image-name
 ```
+
+
+
+
+
+## Docker compose
+
+```
+docker compose build
+docker compose up
+docker compose down
+docker compose stop
+```
+
+
+
+
+
+
+
+
+
+
 
