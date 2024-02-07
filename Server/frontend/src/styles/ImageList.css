@@ -1,0 +1,12 @@
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.weighted-accordion {
+    width: 70%; /* Adjust the width based on your preference */
+    margin: 10px; /* Adjust the margin based on your preference */
+}

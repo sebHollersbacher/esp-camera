@@ -14,10 +14,12 @@ export default function TakeImageButton() {
     };
 
     return (
-        <Button
-            onClick={handlePublish}
-            variant="contained"
-            startIcon={<CameraAltIcon />}
-        >Take Pic</Button>
+      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <Button
+              onClick={handlePublish}
+              variant="contained"
+              startIcon={<CameraAltIcon />}
+          >Take Pic</Button>
+      </div>
     )
 }

@@ -1,16 +1,16 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ImageList from './ImageList';
-import Image from './Image';
+import React from 'react';
+import {BrowserRouter as Router, Routes, Route, useParams} from 'react-router-dom';
+import Page from './Page';
+
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={< ImageList />} />
-        <Route path=":image" element={< Image />} />
-      </Routes>
-    </Router>
-  );
+    return (
+        <Router>
+          <Routes>
+            <Route path="/" element={< Page />} />
+          </Routes>
+        </Router>
+      );
 }
 
 export default App;

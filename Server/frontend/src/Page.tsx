@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import TakeImageButton from './TakeImageButton';
-import SyncButton from './SyncButton';
-import AllImages from './AllImages';
+import TakeImageButton from "./components/TakeImageButton";
+import SyncButton from "./components/SyncButton";
+import ImageList from "./components/ImageList";
 
 
 
@@ -13,7 +13,7 @@ export default function Page() {
   }, []);
 
   const getImageList = () => {
-    fetch('http://192.168.0.23:8000/files')
+    fetch('/files')
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -24,12 +24,20 @@ export default function Page() {
       });
   };
 
+
   return (
-    <div>
+    <div >
       <h1>Welcome to SnapiDepi!</h1>
-      <TakeImageButton/>
+      <hr
+        style={{
+            color: "black",
+            backgroundColor: "black",
+            height: 1
+        }}
+      />
+      <TakeImageButton />
       <h2>All Snapis {<SyncButton onClick={getImageList} />}</h2>
-      <AllImages images={result} />
+      <ImageList images={result} />
     </div>
   );
 }

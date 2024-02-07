@@ -8,7 +8,7 @@ interface SyncButtonProps {
 
 export default function SyncButton({ onClick }: SyncButtonProps) {
     return (
-        <IconButton {...onClick} color="primary">
+        <IconButton onClick={onClick} color="primary">
             <SyncIcon />
         </IconButton>
     );
